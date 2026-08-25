@@ -68,11 +68,11 @@ function ProductPage() {
       <div className="max-w-5xl mx-auto p-4">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden md:flex">
           {/* Foto grande */}
-          <div className="md:w-1/2">
+          <div className="md:w-1/2 flex items-center justify-center p-4" style={{ backgroundColor: secondary }}>
             {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="w-full h-72 md:h-full object-cover" />
+              <img src={product.image_url} alt={product.name} className="w-full max-h-[500px] object-contain rounded-lg" />
             ) : (
-              <div className="w-full h-72 md:h-full bg-gray-100 flex items-center justify-center text-gray-300">Sin foto</div>
+              <div className="w-full h-72 flex items-center justify-center text-gray-300">Sin foto</div>
             )}
           </div>
 
