@@ -3,6 +3,15 @@ import { supabase } from './supabaseClient'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 
+function iconoRed(red) {
+  const props = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }
+  if (red === 'Instagram') return (<svg {...props}><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2m0 5.6a4.2 4.2 0 100 8.4 4.2 4.2 0 000-8.4m5.4-.5a1 1 0 11-2 0 1 1 0 012 0M12 9.6a2.4 2.4 0 110 4.8 2.4 2.4 0 010-4.8" /></svg>)
+  if (red === 'TikTok') return (<svg {...props}><path d="M16.6 5.8c-1-.7-1.6-1.7-1.8-2.8h-3v11.5c0 1.4-1.1 2.5-2.5 2.5s-2.5-1.1-2.5-2.5 1.1-2.5 2.5-2.5c.3 0 .5 0 .8.1v-3c-.3 0-.5-.1-.8-.1-3 0-5.5 2.5-5.5 5.5s2.5 5.5 5.5 5.5 5.5-2.5 5.5-5.5V9.4c1.1.8 2.5 1.3 4 1.3v-3c-.8 0-1.6-.3-2.2-.8" /></svg>)
+  if (red === 'Twitter') return (<svg {...props}><path d="M18.9 2h3.3l-7.2 8.3L23.5 22h-6.6l-5.2-6.8L5.7 22H2.4l7.7-8.8L1.5 2h6.8l4.7 6.2zm-1.2 18h1.8L7.4 3.8H5.5z" /></svg>)
+  if (red === 'Facebook') return (<svg {...props}><path d="M22 12a10 10 0 10-11.6 9.9v-7H8v-2.9h2.4V9.8c0-2.4 1.4-3.7 3.6-3.7 1 0 2.1.2 2.1.2v2.3h-1.2c-1.2 0-1.5.7-1.5 1.4v1.7h2.6l-.4 2.9h-2.2v7A10 10 0 0022 12" /></svg>)
+  return null
+}
+
 function CatalogPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -73,6 +82,12 @@ function CatalogPage() {
   const cardStyle = tenant?.theme?.card_style || 'completo'
   const headerImage = tenant?.theme?.header_image || ''
   const esDueño = profile?.role === 'admin' && profile?.tenant_id === tenant?.id
+  const redes = [
+    { user: tenant?.theme?.instagram, base: 'https://instagram.com/', label: 'Instagram' },
+    { user: tenant?.theme?.tiktok, base: 'https://tiktok.com/@', label: 'TikTok' },
+    { user: tenant?.theme?.twitter, base: 'https://twitter.com/', label: 'Twitter' },
+    { user: tenant?.theme?.facebook, base: 'https://facebook.com/', label: 'Facebook' },
+  ].filter((r) => r.user)
 
   function ordenarWhatsApp() {
     if (cart.length === 0) return
@@ -282,6 +297,22 @@ function CatalogPage() {
             </section>
           )
         })}
+              {redes.length > 0 && (
+        <div className="max-w-5xl mx-auto px-6 py-10">
+          <p className="text-center text-sm text-gray-500 mb-4" style={{ fontFamily: fontTitle }}>Síguenos en redes</p>
+          <div className="flex justify-center gap-8 flex-wrap">
+            {redes.map((r) => (
+              <a key={r.label} href={`${r.base}${r.user}`} target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-1 group">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition" style={{ backgroundColor: primary }}>
+                  {iconoRed(r.label)}
+                </div>
+                <span className="text-xs text-gray-600">@{r.user}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
       </main>
 
       {/* Barra de pedido fija abajo */}
@@ -301,5 +332,7 @@ function CatalogPage() {
     </div>
   )
 }
+
+
 
 export default CatalogPage

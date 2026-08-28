@@ -8,6 +8,8 @@ function ProductPage() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [imagenes, setImagenes] = useState([])
+  const [fotoActual, setFotoActual] = useState(0)
 
   // Campos de cotización
   const [ubicacion, setUbicacion] = useState('')
@@ -25,6 +27,15 @@ function ProductPage() {
       const { data: p } = await supabase.from('products').select('*').eq('id', productId).eq('tenant_id', t.id).single()
       if (!p) { setNotFound(true); setLoading(false); return }
       setProduct(p)
+
+      // Cargar fotos adicionales
+      const { data: extras } = await supabase.from('product_images').select('*').eq('product_id', p.id).order('sort_order')
+      // La lista de fotos: principal primero, luego las adicionales
+      const todas = []
+      if (p.image_url) todas.push(p.image_url)
+      ;(extras || []).forEach((e) => todas.push(e.image_url))
+      setImagenes(todas)
+
       setLoading(false)
     }
     cargar()
@@ -67,10 +78,34 @@ function ProductPage() {
 
       <div className="max-w-5xl mx-auto p-4">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden md:flex">
-          {/* Foto grande */}
-          <div className="md:w-1/2 flex items-center justify-center p-4" style={{ backgroundColor: secondary }}>
-            {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="w-full max-h-[500px] object-contain rounded-lg" />
+          {/* Galería */}
+          <div className="md:w-1/2 p-4" style={{ backgroundColor: secondary }}>
+            {imagenes.length > 0 ? (
+              <div>
+                {/* Foto grande con flechas */}
+                <div className="relative flex items-center justify-center mb-3 bg-white rounded-xl shadow-sm p-3">
+                  <img src={imagenes[fotoActual]} alt={product.name} className="w-full max-h-[450px] object-contain rounded-lg" />
+                  {imagenes.length > 1 && (
+                    <>
+                      <button onClick={() => setFotoActual((fotoActual - 1 + imagenes.length) % imagenes.length)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white w-9 h-9 rounded-full shadow flex items-center justify-center font-bold text-gray-700">‹</button>
+                      <button onClick={() => setFotoActual((fotoActual + 1) % imagenes.length)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white w-9 h-9 rounded-full shadow flex items-center justify-center font-bold text-gray-700">›</button>
+                    </>
+                  )}
+                </div>
+                {/* Miniaturas */}
+                {imagenes.length > 1 && (
+                  <div className="flex gap-2 flex-wrap justify-center">
+                    {imagenes.map((img, i) => (
+                      <button key={i} onClick={() => setFotoActual(i)}
+                        className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${i === fotoActual ? 'border-gray-800' : 'border-transparent'}`}>
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="w-full h-72 flex items-center justify-center text-gray-300">Sin foto</div>
             )}

@@ -38,6 +38,9 @@ function AdminPage() {
   const [slug, setSlug] = useState('')
   const [confirmar, setConfirmar] = useState(null) // { tipo, id, nombre }
 
+  const [galeria, setGaleria] = useState([])
+  const [subiendoGaleria, setSubiendoGaleria] = useState(false)
+
   const [showCatManager, setShowCatManager] = useState(false)
   const [newCatName, setNewCatName] = useState('')
 
@@ -105,11 +108,11 @@ function AdminPage() {
   function abrirCrear() {
     setEditingId(null)
     setName(''); setDescription(''); setPrice(''); setCategoryId('')
-    setIsAvailable(true); setImageUrl('')
+    setIsAvailable(true); setImageUrl(''); setGaleria([])
     setShowForm(true)
   }
 
-  function abrirEditar(prod) {
+  async function abrirEditar(prod) {
     setEditingId(prod.id)
     setName(prod.name)
     setDescription(prod.description || '')
@@ -118,8 +121,34 @@ function AdminPage() {
     setIsAvailable(prod.is_available)
     setImageUrl(prod.image_url || '')
     setShowForm(true)
+    // Cargar galería
+    const { data } = await supabase.from('product_images').select('*').eq('product_id', prod.id).order('sort_order')
+    setGaleria(data || [])
+  }
+  async function subirFotoGaleria(e) {
+    const files = Array.from(e.target.files)
+    if (files.length === 0 || !editingId) return
+    setSubiendoGaleria(true)
+    for (const file of files) {
+      const ext = file.name.split('.').pop()
+      const fileName = `${profile.tenant_id}/galeria-${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`
+      const { error } = await supabase.storage.from('product-images').upload(fileName, file)
+      if (!error) {
+        const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
+        await supabase.from('product_images').insert({
+          product_id: editingId, image_url: data.publicUrl, sort_order: galeria.length,
+        })
+      }
+    }
+    const { data: nuevas } = await supabase.from('product_images').select('*').eq('product_id', editingId).order('sort_order')
+    setGaleria(nuevas || [])
+    setSubiendoGaleria(false)
   }
 
+  async function borrarFotoGaleria(id) {
+    await supabase.from('product_images').delete().eq('id', id)
+    setGaleria(galeria.filter((g) => g.id !== id))
+  }
   async function subirImagen(e) {
     const file = e.target.files[0]
     if (!file) return
@@ -132,6 +161,8 @@ function AdminPage() {
     setImageUrl(data.publicUrl)
     setUploading(false)
   }
+
+  
 
   function quitarImagen() { setImageUrl('') }
 
@@ -331,6 +362,28 @@ function AdminPage() {
                 <label className="inline-block bg-gray-800 text-white text-sm px-4 py-2 rounded cursor-pointer hover:bg-gray-900">
                   {uploading ? 'Subiendo...' : '＋ Subir foto'}
                   <input type="file" accept="image/*" onChange={subirImagen} className="hidden" />
+                </label>
+              </div>
+            )}
+
+            {editingId && (
+              <div className="mb-4 border-t pt-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Fotos adicionales (galería)</label>
+                <p className="text-xs text-gray-400 mb-2">Estas se muestran en la página del producto. Puedes subir varias.</p>
+                {galeria.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {galeria.map((g) => (
+                      <div key={g.id} className="relative">
+                        <img src={g.image_url} alt="" className="w-16 h-16 object-cover rounded border" />
+                        <button onClick={() => borrarFotoGaleria(g.id)}
+                          className="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center hover:bg-red-700">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className="inline-block bg-gray-800 text-white text-sm px-4 py-2 rounded cursor-pointer hover:bg-gray-900">
+                  {subiendoGaleria ? 'Subiendo...' : '＋ Agregar fotos'}
+                  <input type="file" accept="image/*" multiple onChange={subirFotoGaleria} className="hidden" />
                 </label>
               </div>
             )}

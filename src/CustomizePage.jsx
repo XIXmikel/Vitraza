@@ -29,6 +29,11 @@ function CustomizePage() {
   const [headerImage, setHeaderImage] = useState('')
   const [uploadingHeader, setUploadingHeader] = useState(false)
 
+  const [instagram, setInstagram] = useState('')
+  const [tiktok, setTiktok] = useState('')
+  const [twitter, setTwitter] = useState('')
+  const [facebook, setFacebook] = useState('')
+
   const [bizName, setBizName] = useState('')
   const [headerText, setHeaderText] = useState('')
   const [primaryColor, setPrimaryColor] = useState('#2563eb')
@@ -82,6 +87,10 @@ function CustomizePage() {
         if (t.theme?.font_body) setFontBody(t.theme.font_body)
         if (t.theme?.card_style) setCardStyle(t.theme.card_style)
         if (t.theme?.header_image) setHeaderImage(t.theme.header_image)
+        if (t.theme?.instagram) setInstagram(t.theme.instagram)
+        if (t.theme?.tiktok) setTiktok(t.theme.tiktok)
+        if (t.theme?.twitter) setTwitter(t.theme.twitter)
+        if (t.theme?.facebook) setFacebook(t.theme.facebook)
       }
       setLoadingData(false)
     }
@@ -123,7 +132,10 @@ function CustomizePage() {
         primary: primaryColor, secondary: secondaryColor,
         logo_url: logoUrl || null, logo_layout: logoLayout,
         header_text: headerText.trim(),         font_title: fontTitle,
-        font_body: fontBody, card_style: cardStyle, header_image: headerImage || null,
+        font_body: fontBody, card_style: cardStyle, header_image: headerImage || null,         instagram: instagram.trim() || null,
+        tiktok: tiktok.trim() || null,
+        twitter: twitter.trim() || null,
+        facebook: facebook.trim() || null,
       },
     }).eq('id', profile.tenant_id)
     setSaving(false)
@@ -152,7 +164,7 @@ function CustomizePage() {
       {/* Dos columnas */}
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 p-6">
         {/* PANEL IZQUIERDO: controles */}
-        <div className="lg:w-96 flex-shrink-0 space-y-6">
+        <div className="lg:w-96 flex-shrink-0 space-y-3">
 
                     <Section id="logo" title="Logo y encabezado" openSection={openSection} setOpenSection={setOpenSection}>
             {/* Logo */}
@@ -169,9 +181,16 @@ function CustomizePage() {
               </label>
             )}
 
-            <label className="block text-sm text-gray-600 mb-1 mt-2">Disposición del logo</label>
-            <div className="grid grid-cols-3 gap-2">
-              {[{ id: 'left', label: 'Logo + nombre' }, { id: 'logo-only', label: 'Solo logo' }, { id: 'top', label: 'Logo arriba' }].map((opt) => (
+            <label className="block text-sm text-gray-600 mb-1 mt-2">Disposición del encabezado</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'left', label: 'Logo + nombre (izq.)' },
+                { id: 'logo-only', label: 'Solo logo' },
+                { id: 'top', label: 'Logo arriba' },
+                { id: 'name-only', label: 'Solo nombre' },
+                { id: 'center-inline', label: 'Logo + nombre (centro)' },
+                { id: 'name-big', label: 'Nombre grande' },
+              ].map((opt) => (
                 <button key={opt.id} onClick={() => setLogoLayout(opt.id)}
                   className={`border rounded p-2 text-xs ${logoLayout === opt.id ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold' : 'border-gray-300 text-gray-600'}`}>
                   {opt.label}
@@ -261,7 +280,41 @@ function CustomizePage() {
               </div>
             </div>
           </Section>
+
+          <Section id="redes" title="Redes sociales" openSection={openSection} setOpenSection={setOpenSection}>
+            <p className="text-sm text-gray-500 mb-3">Escribe solo tu usuario (sin @ ni el link). Las que dejes vacías no aparecerán.</p>
+
+            <label className="block text-sm text-gray-600 mb-1">Instagram</label>
+            <div className="flex items-center border border-gray-300 rounded mb-3">
+              <span className="px-2 text-gray-400 text-sm">@</span>
+              <input value={instagram} onChange={(e) => setInstagram(e.target.value)}
+                className="flex-1 px-2 py-2 outline-none" placeholder="nombre de usuario" />
+            </div>
+
+            <label className="block text-sm text-gray-600 mb-1">TikTok</label>
+            <div className="flex items-center border border-gray-300 rounded mb-3">
+              <span className="px-2 text-gray-400 text-sm">@</span>
+              <input value={tiktok} onChange={(e) => setTiktok(e.target.value)}
+                className="flex-1 px-2 py-2 outline-none" placeholder="nombre de usuario" />
+            </div>
+
+            <label className="block text-sm text-gray-600 mb-1">Twitter / X</label>
+            <div className="flex items-center border border-gray-300 rounded mb-3">
+              <span className="px-2 text-gray-400 text-sm">@</span>
+              <input value={twitter} onChange={(e) => setTwitter(e.target.value)}
+                className="flex-1 px-2 py-2 outline-none" placeholder="nombre de usuario" />
+            </div>
+
+            <label className="block text-sm text-gray-600 mb-1">Facebook</label>
+            <div className="flex items-center border border-gray-300 rounded">
+              <span className="px-2 text-gray-400 text-sm">@</span>
+              <input value={facebook} onChange={(e) => setFacebook(e.target.value)}
+                className="flex-1 px-2 py-2 outline-none" placeholder="nombre de usuario" />
+            </div>
+          </Section>
         </div>
+
+
 
         {/* PANEL DERECHO: preview */}
         <div className="flex-1">
@@ -273,18 +326,39 @@ function CustomizePage() {
               <div className="relative">
                 {logoLayout === 'top' ? (
                   <div className="flex flex-col items-center text-center gap-2">
-                    {logoUrl && <img src={logoUrl} alt="logo" className="w-16 h-16 rounded-full object-cover border-2 border-white" />}
+                    {logoUrl && <img src={logoUrl} alt="logo" className="w-14 h-14 rounded-full object-cover border-2 border-white" />}
                     <p className="text-white font-bold text-2xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>
                     {headerText && <p className="text-white/80 text-sm">{headerText}</p>}
                   </div>
                 ) : logoLayout === 'logo-only' ? (
-                  <div>
-                    {logoUrl ? <img src={logoUrl} alt="logo" className="h-14 object-contain" /> : <p className="text-white font-bold text-2xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>}
+                  <div className="flex flex-col items-center text-center gap-2">
+                    {logoUrl ? <img src={logoUrl} alt="logo" className="w-20 h-20 rounded-full object-cover border-2 border-white" /> : <p className="text-white font-bold text-2xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>}
+                    {headerText && <p className="text-white/80 text-sm">{headerText}</p>}
+                  </div>
+                ) : logoLayout === 'name-only' ? (
+                  <div className="text-center">
+                    <p className="text-white font-bold text-3xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>
                     {headerText && <p className="text-white/80 text-sm mt-1">{headerText}</p>}
+                  </div>
+                ) : logoLayout === 'center-inline' ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      {logoUrl && <img src={logoUrl} alt="logo" className="w-12 h-12 rounded-full object-cover border-2 border-white" />}
+                      <p className="text-white font-bold text-2xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>
+                    </div>
+                    {headerText && <p className="text-white/80 text-sm">{headerText}</p>}
+                  </div>
+                ) : logoLayout === 'name-big' ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-white font-bold text-3xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>
+                      {headerText && <p className="text-white/80 text-sm">{headerText}</p>}
+                    </div>
+                    {logoUrl && <img src={logoUrl} alt="logo" className="w-12 h-12 rounded-full object-cover border-2 border-white flex-shrink-0" />}
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    {logoUrl && <img src={logoUrl} alt="logo" className="w-14 h-14 rounded-full object-cover border-2 border-white" />}
+                    {logoUrl && <img src={logoUrl} alt="logo" className="w-12 h-12 rounded-full object-cover border-2 border-white" />}
                     <div>
                       <p className="text-white font-bold text-2xl" style={{ fontFamily: fontTitle }}>{bizName || 'Nombre del negocio'}</p>
                       {headerText && <p className="text-white/80 text-sm">{headerText}</p>}
